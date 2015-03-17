@@ -1,0 +1,28 @@
+#include <stdio.h> 
+#include <stdlib.h> 
+
+
+int main(int argc, char** argv) 
+{ 
+    if (argc != 2) return 1; 
+    const char* filename = argv[1]; 
+    FILE *fp = fopen (filename, "r"); 
+    if (!fp) return 1; 
+
+    #define BS 4096 /* match coreutils */ 
+
+    blk_SHA_CTX ctx; 
+    blk_SHA1_Init(&ctx); 
+    size_t nr; 
+    char buf[BS]; 
+    while ((nr=fread_unlocked(buf, 1, sizeof(buf), fp))) 
+        blk_SHA1_Update(&ctx, buf, nr); 
+    unsigned char hash[20]; 
+    blk_SHA1_Final(hash, &ctx); 
+    int i; 
+    for (i=0; i<sizeof(hash); i++) 
+        printf("%02x",*(hash+i)); 
+    printf("  %s\n", filename); 
+
+    return 0; 
+} 
